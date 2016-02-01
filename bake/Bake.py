@@ -778,7 +778,7 @@ class Bake:
                 env._sudoEnabled=options.call_with_sudo
                 ModuleEnvironment._stopOnError=options.stopOnError
                 valueToReturn=module.check_source_version(env)
-            
+
             
                 if valueToReturn: 
                     return module.download(env, options.force_download)
@@ -1016,12 +1016,12 @@ class Bake:
             else:
                 colorTool.cPrintln(colorTool.WARNING, " > " + element[1] + 
                                  " - is missing")
-        print
+        print ('\n')
         colorTool.cPrint(colorTool.OK, " > Path searched for tools:")
         for item in env.path_list():
             sys.stdout.write (' ' + item)
             sys.stdout.flush()
-        print
+        print ('\n')
           
     def _get_dummy_env(self, options):
         """ Returns a dummy environment just for verifying the user's system configuration. """
