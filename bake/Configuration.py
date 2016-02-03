@@ -252,13 +252,6 @@ class Configuration:
                 
             classname = node.get('classname')
             import codeop
-            s=""
-            for a in code_node.text:
-                if a == '\t':
-                    s += "        "
-                else:
-                    s += a
-            code_node.text = s
             exec(code_node.text, globals(), locals())
             obj = eval(classname + '()')
             obj.__hidden_source_code = code_node.text
