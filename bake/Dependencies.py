@@ -360,7 +360,7 @@ class Dependencies:
                     success = i.context()()
                 except TaskError as e:
                     success = False
-                    print ("  > Error: " + e._reason)
+                    print("  > Error: " + e._reason)
 #                except SystemExit as e:
 #                    print(sys.exc_info())
 #
@@ -370,7 +370,7 @@ class Dependencies:
                     success = False
                     import sys
                     er = sys.exc_info()[1]
-                    print ("  > Error: " + str(er))
+                    print("  > Error: " + str(er))
                     from bake.ModuleEnvironment import ModuleEnvironment
                     if ModuleEnvironment._stopOnError:
                         er = sys.exc_info()[1]
@@ -381,7 +381,7 @@ class Dependencies:
                     success = callback(i.dst(), i.context())
                 except TaskError as e:
                     success = False
-                    print ("  > Error: " + e._reason)
+                    print("  > Error: " + e._reason)
                     from bake.ModuleEnvironment import ModuleEnvironment
                     if ModuleEnvironment._stopOnError:
                         er = sys.exc_info()[1]
@@ -390,7 +390,7 @@ class Dependencies:
                     success = False
                     import sys
                     er = sys.exc_info()[1]
-                    print ("  > Unexpected error: " + str(er))
+                    print("  > Unexpected error: " + str(er))
                     from bake.ModuleEnvironment import ModuleEnvironment
                     if ModuleEnvironment._stopOnError:
                         er = sys.exc_info()[1]
@@ -412,7 +412,7 @@ class Dependencies:
                             
                             if not self.dependencies[i.dst()._name].moduleProblem:
                                 
-                                print (' > Problem: Optional dependency,'
+                                print(' > Problem: Optional dependency,'
                                              ' module "%s" %s\n'
                                              '   This may reduce the  '
                                              'functionality of the final build. \n'

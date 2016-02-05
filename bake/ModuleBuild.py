@@ -178,9 +178,7 @@ class ModuleBuild(ModuleAttributeBase):
 
             try:
                 env._logger.commands.write('cd ' + env.srcdir + '; patch -p1 < ' + item + '\n')
-                print("here")
                 status = getstatusoutput('cd ' + env.srcdir + '; patch -p1 < ' + item) 
-                print(env.srcdir)
             except:
                 raise TaskError('Patch error: %s, in: %s' % (item, env._module_name))
             

@@ -123,7 +123,7 @@ class ModuleSource(ModuleAttributeBase):
         else:
             distribution = osName
         
-        if tools.has_key(distribution):
+        if distribution in tools:
             return tools[distribution]
         else :
             return ''

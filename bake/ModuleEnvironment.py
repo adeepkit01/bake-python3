@@ -516,7 +516,6 @@ class ModuleEnvironment:
         tmp = self.append_to_path(tmp)
         
         # Calls the third party executable with the whole context
-        print(args)
         try:
             popen = subprocess.Popen(args,
                                      stdin = stdin,
