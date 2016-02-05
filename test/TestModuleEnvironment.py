@@ -21,7 +21,12 @@ import unittest
 # hack to save ourselves from having to use PYTHONPATH
 import sys
 import os
-
+try:
+    import commands
+    from commands import getoutput
+except ImportError:
+    import subprocess
+    from subprocess import getoutput
 import test.TestBake
 from bake.ModuleEnvironment import ModuleEnvironment
 from bake.ModuleLogger import StdoutModuleLogger
@@ -111,8 +116,7 @@ class TestModuleEnvironment(unittest.TestCase):
         self.assertTrue("v2" in string)
         self.assertTrue("v3" in string)
         self.assertTrue("v4" in string)
-        import commands
-        testStatus = commands.getoutput('rm -rf /tmp/source')
+        testStatus = getoutput('rm -rf /tmp/source')
         self.assertTrue(not testStatus)
 
     def Dtest___create_environement_file(self):
@@ -120,8 +124,7 @@ class TestModuleEnvironment(unittest.TestCase):
         
         testResult = self._env.create_environement_file('test.sh');
         self.assertTrue(os.path.exists('test.sh'))
-        import commands
-        testStatus = commands.getoutput('rm -rf test.sh')
+        testStatus = getoutput('rm -rf test.sh')
  
 
     # def check_program(self, program, version_arg = None,

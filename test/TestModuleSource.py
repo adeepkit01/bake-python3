@@ -20,7 +20,12 @@
 import unittest
 import sys
 import os
-import commands
+try:
+    import commands
+    from commands import getoutput
+except ImportError:
+    import subprocess
+    from subprocess import getoutput
 import re
 
 from bake.ModuleEnvironment import ModuleEnvironment
@@ -121,10 +126,10 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verifies that files are really there after the download
-        testStatus = commands.getoutput('ls /tmp/click-1.8.0.tar.gz')
+        testStatus = getoutput('ls /tmp/click-1.8.0.tar.gz')
         self.assertEqual("/tmp/click-1.8.0.tar.gz", testStatus)
  
-        testStatus = commands.getoutput('ls -d /tmp/click-1.8.0')
+        testStatus = getoutput('ls -d /tmp/click-1.8.0')
         self.assertEqual("/tmp/click-1.8.0", testStatus)
       
         #after the test, clean the environment
@@ -143,7 +148,7 @@ class TestModuleSource(unittest.TestCase):
 
         # Try to download to a directory that the user has no permission
         archive.attribute("url").value = "http://read.cs.ucla.edu/click/click-1.8.0.tar.gz"
-        testStatus = commands.getoutput('touch /tmp/click-1.8.0;chmod 000 /tmp/click-1.8.0')    
+        testStatus = getoutput('touch /tmp/click-1.8.0;chmod 000 /tmp/click-1.8.0')    
         testResult = None
         try:
             testResult = archive.download(self._env)
@@ -152,11 +157,11 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
 
-        testStatus = commands.getoutput("chmod 755 /tmp/click-1.8.0; rm -f "
+        testStatus = getoutput("chmod 755 /tmp/click-1.8.0; rm -f "
                                         "/tmp/click-1.8.0")
 
         # try to download to a non existent directory        
-        testStatus = commands.getoutput('rm -rf /tmp/testDir')
+        testStatus = getoutput('rm -rf /tmp/testDir')
         self._env._sourcedir = "/tmp/testDir"
         testResult = None
         try:
@@ -167,7 +172,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
             
-        testStatus = commands.getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
+        testStatus = getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
         testResult = None
         try:
             testResult = archive.download(self._env)
@@ -177,7 +182,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
 
-        testStatus = commands.getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
+        testStatus = getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
  
         # no protocol download url gives you an error
         archive.attribute("url").value = "read.cs.ucla.edu/click/click-1.8.0.tar.gz"
@@ -198,7 +203,7 @@ class TestModuleSource(unittest.TestCase):
         # directory the system returns no error Right now I have no idea how
         # to fix it, or IF we should try to fix anyway.
 #        self._env._sourcedir = "/tmp"
-#        testStatus = commands.getoutput('mkdir /tmp/click-1.8.0;chmod 000 /tmp/click-1.8.0')       
+#        testStatus = getoutput('mkdir /tmp/click-1.8.0;chmod 000 /tmp/click-1.8.0')       
 #        try:
 #            testResult = archive.download(self._env)
 #            self.fail("There was not problem, the user has no permission over the target directory. ")
@@ -206,7 +211,7 @@ class TestModuleSource(unittest.TestCase):
 #            self.assertNotEqual(e._reason, None)    
 #            self.assertEqual(testResult, None)
 #
-#        testStatus = commands.getoutput('chmod 755 /tmp/click-1.8.0; rm -rf /tmp/click-1.8.0')
+#        testStatus = getoutput('chmod 755 /tmp/click-1.8.0; rm -rf /tmp/click-1.8.0')
 
     def test_check_dependency_expression(self):
         """ Tests the _check_dependency_expression method. """
@@ -484,7 +489,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is the correct one
-        testStatus = commands.getoutput('cd /tmp/bake;hg summary')
+        testStatus = getoutput('cd /tmp/bake;hg summary')
         version = re.compile('\d+').search(testStatus).group()
         self.assertEqual(version, "63")
 
@@ -494,7 +499,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is the correct one
-        testStatus = commands.getoutput('cd /tmp/bake;hg summary')
+        testStatus = getoutput('cd /tmp/bake;hg summary')
         version = re.compile('\d+').search(testStatus).group()
         self.assertEqual(version, "64")
         
@@ -504,9 +509,9 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is the correct one
-        testStatus = commands.getoutput('cd /tmp/bake;hg log')
+        testStatus = getoutput('cd /tmp/bake;hg log')
         versionRepository = re.compile('\d+').search(testStatus).group()
-        testStatus = commands.getoutput('cd /tmp/bake;hg summary')
+        testStatus = getoutput('cd /tmp/bake;hg summary')
         versionDownloaded = re.compile('\d+').search(testStatus).group()
         self.assertEqual(versionRepository, versionDownloaded)
         
@@ -526,7 +531,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertEqual(testResult, None)
 
         self.execute_command(["rm", "-rf", "bake"], "/tmp")
-        testStatus = commands.getoutput('mkdir /tmp/bake;chmod 000 /tmp/bake')    
+        testStatus = getoutput('mkdir /tmp/bake;chmod 000 /tmp/bake')    
         mercurial.attribute("url").value = "http://code.nsnam.org/daniel/bake"
         testResult = None
         try:
@@ -537,18 +542,18 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
             
-        testStatus = commands.getoutput('chmod 755 /tmp/bake')    
+        testStatus = getoutput('chmod 755 /tmp/bake')    
         self.execute_command(["rm", "-rf", "bake"], "/tmp")
         
         # try to download to a non existent directory
         # mercurial cretes the directory
-        testStatus = commands.getoutput('rm -rf /tmp/testDir')
+        testStatus = getoutput('rm -rf /tmp/testDir')
         self._env._sourcedir = "/tmp/testDir"
         testResult = mercurial.download(self._env)
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('rm -rf /tmp/testDir')
+        testStatus = getoutput('rm -rf /tmp/testDir')
           
-        testStatus = commands.getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
+        testStatus = getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
         testResult = None
         try:
             testResult = mercurial.download(self._env)
@@ -558,7 +563,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
 
-        testStatus = commands.getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
+        testStatus = getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
 
  
         # Try to get a wrong version, there is a but in the mercurial
@@ -600,7 +605,7 @@ class TestModuleSource(unittest.TestCase):
         # None means everything was OK, since there were no exceptions
         self.assertEqual(testResult, None)
         
-        testStatus = commands.getoutput('cd /tmp/pybindgen; bzr log')
+        testStatus = getoutput('cd /tmp/pybindgen; bzr log')
         lastVersion = re.compile('\d+').search(testStatus).group()
 
         #after the test, clean the environment
@@ -612,7 +617,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is the correct one
-        testStatus = commands.getoutput('cd /tmp/pybindgen; bzr log')
+        testStatus = getoutput('cd /tmp/pybindgen; bzr log')
         version = re.compile('\d+').search(testStatus).group()
         self.assertEqual(version, "794")
 
@@ -622,7 +627,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is the correct one
-        testStatus = commands.getoutput('cd /tmp/pybindgen; bzr log')
+        testStatus = getoutput('cd /tmp/pybindgen; bzr log')
         version = re.compile('\d+').search(testStatus).group()
         self.assertEqual(version, "795")
         
@@ -655,7 +660,7 @@ class TestModuleSource(unittest.TestCase):
             
         self.execute_command(["rm", "-rf", "pybindgen"], "/tmp")
         
-        testStatus = commands.getoutput('mkdir /tmp/pybindgen;chmod 000 /tmp/pybindgen')    
+        testStatus = getoutput('mkdir /tmp/pybindgen;chmod 000 /tmp/pybindgen')    
         bazaar.attribute("url").value = "https://launchpad.net/pybindgen"
         testResult = None
         try:
@@ -666,11 +671,11 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
             
-        testStatus = commands.getoutput('chmod 755 /tmp/pybindgen')    
+        testStatus = getoutput('chmod 755 /tmp/pybindgen')    
         self.execute_command(["rm", "-rf", "pybindgen"], "/tmp")
         
         # try to download to a non existent directory        
-        testStatus = commands.getoutput('rm -rf /tmp/testDir')
+        testStatus = getoutput('rm -rf /tmp/testDir')
         self._env._sourcedir = "/tmp/testDir"
         testResult = None
         try:
@@ -682,7 +687,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertEqual(testResult, None)
         
         # try to download to a directory where the user has no permission    
-        testStatus = commands.getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
+        testStatus = getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
         testResult = None
         try:
             testResult = bazaar.download(self._env)
@@ -692,7 +697,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
 
-        testStatus = commands.getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
+        testStatus = getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
  
         # returns to the original state
         bazaar.attribute("url").value = "https://launchpad.net/pybindgen"
@@ -764,7 +769,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # will use the README file to see if the update works
-        testStatus = commands.getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
+        testStatus = getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
         lastVersion = re.compile('\d+.\d+').search(testStatus).group().replace(".","")
 
         #after the test, clean the environment
@@ -777,7 +782,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is the correct one
-        testStatus = commands.getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
+        testStatus = getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
         version = re.compile('\d+.\d+').search(testStatus).group().replace(".","")
         self.assertEqual(version, "18")
 
@@ -787,7 +792,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is bigger than the previous one
-        testStatus = commands.getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
+        testStatus = getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
         version2 = re.compile('\d+.\d+').search(testStatus).group().replace(".","")
         self.assertTrue((float(version) < float(version2)))
         
@@ -795,7 +800,7 @@ class TestModuleSource(unittest.TestCase):
         cvs.attribute("date").value=None
         testResult = cvs.update(self._env)       
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
+        testStatus = getoutput('cd /tmp/gccxml; cvs status CMakeLists.txt')
         version3 = re.compile('\d+.\d+').search(testStatus).group().replace(".","")
         self.assertTrue(float(version2) < float(version3))
 
@@ -817,7 +822,7 @@ class TestModuleSource(unittest.TestCase):
         self.execute_command(["rm", "-rf", "gccxml"], "/tmp")
 
         # try to download to a non existent directory        
-        testStatus = commands.getoutput('rm -rf /tmp/testDir')
+        testStatus = getoutput('rm -rf /tmp/testDir')
         self._env._sourcedir = "/tmp/testDir"
         testResult = None
         try:
@@ -829,7 +834,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertEqual(testResult, None)
         
         # try to download to a directory where the user has no permission    
-        testStatus = commands.getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
+        testStatus = getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
         testResult = None
         try:
             testResult = cvs.download(self._env)
@@ -839,7 +844,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
 
-        testStatus = commands.getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
+        testStatus = getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
  
         # returns to the original state
         cvs.attribute("root").value = ":pserver:anoncvs:@www.gccxml.org:/cvsroot/GCC_XML"
@@ -896,7 +901,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # will use the README file to see if the update works
-        testStatus = commands.getoutput('cd /tmp/hello-world; git log')
+        testStatus = getoutput('cd /tmp/hello-world; git log')
         lastVersion = re.compile(' +\w+').search(testStatus).group().replace(" ","")
         self.assertEqual(lastVersion, "78cfc43c2827b9e48e6586a3523ff845a6378889")
 
@@ -907,7 +912,7 @@ class TestModuleSource(unittest.TestCase):
         testResult = git.update(self._env)       
         self.assertEqual(testResult, None)
 
-        commands.getoutput("cat /tmp/hello-world/c.c >> /tmp/hello-world/dos.bat")
+        getoutput("cat /tmp/hello-world/c.c >> /tmp/hello-world/dos.bat")
         testResult = git.update(self._env)       
         self.assertEqual(testResult, None)
 
@@ -920,7 +925,7 @@ class TestModuleSource(unittest.TestCase):
         self.assertEqual(testResult, None)
         
         # verify that the version is the correct one
-        testStatus = commands.getoutput('cd /tmp/hello-world; git log')
+        testStatus = getoutput('cd /tmp/hello-world; git log')
         version = re.compile(' +\w+').search(testStatus).group().replace(" ","")
         self.assertEqual(version, "3fa7c46d11b11d61f1cbadc6888be5d0eae21969")
          
@@ -957,7 +962,7 @@ class TestModuleSource(unittest.TestCase):
         self.execute_command(["rm", "-rf", "gccxml"], "/tmp")
 
         # try to download to a non existent directory        
-        testStatus = commands.getoutput('rm -rf /tmp/testDir')
+        testStatus = getoutput('rm -rf /tmp/testDir')
         self._env._sourcedir = "/tmp/testDir"
         testResult = None
         try:
@@ -969,7 +974,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertEqual(testResult, None)
         
         # try to download to a directory where the user has no permission    
-        testStatus = commands.getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
+        testStatus = getoutput('mkdir /tmp/testDir;chmod 000 /tmp/testDir')
         testResult = None
         try:
             testResult = git.download(self._env)
@@ -979,7 +984,7 @@ class TestModuleSource(unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
 
-        testStatus = commands.getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
+        testStatus = getoutput('chmod 755 /tmp/testDir; rm -rf /tmp/testDir')
  
         # Invalid argument, it is int and should be string
         self._env._sourcedir = -60
@@ -1007,7 +1012,7 @@ class TestModuleSource(unittest.TestCase):
 # I guess there is a bug in the move of the os library.... I need to see this
 # further later        
 #        cvs.attribute("root").value = ":pserver:anoncvs:@www.gccxml.org:/cvsroot/GCC_XML"
-#        testStatus = commands.getoutput('mkdir /tmp/gccxml;chmod 000 /tmp/gccxml')    
+#        testStatus = getoutput('mkdir /tmp/gccxml;chmod 000 /tmp/gccxml')    
 #        try:
 #            testResult = cvs.download(self._env)
 #            self.fail("There was no problem and the user has no permission over the directory. ")
@@ -1015,7 +1020,7 @@ class TestModuleSource(unittest.TestCase):
 #            self.assertNotEqual(e._reason, None)    
 #            self.assertEqual(testResult, None)
 #            
-#        testStatus = commands.getoutput('chmod 755 /tmp/gccxml')    
+#        testStatus = getoutput('chmod 755 /tmp/gccxml')    
 #        self.executeCommand(["rm", "-rf", "gccxml"], "/tmp")
 
 

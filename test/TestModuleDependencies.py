@@ -103,7 +103,7 @@ class Test:
         if target in self._failure:
             return False
         self._processed.append(target)
-        if self._infos.has_key(target):
+        if target in self._infos:
             for src,dst,optional in self._infos[target].edges ():
                 self._deps.add_dst(src)
                 self._deps.add_dst(dst)
@@ -134,7 +134,7 @@ lex.yy -> lex.yy.h
 lex.yy.h -> bar.c
 """
         self.run_one_test(deps, ['bar.o'], 
-                          ['bar.h', 'lex.yy', 'lex.yy.h', 'bar.c', 'bar.o'])
+                          ['bar.h','lex.yy', 'lex.yy.h', 'bar.c', 'bar.o'])
         self.run_one_test(deps, ['foo.o'], 
                           ['foo.h', 'foo.c', 'foo.o'])
         self.run_one_test(deps, ['main'], 

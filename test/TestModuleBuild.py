@@ -21,7 +21,12 @@ import unittest
 # hack to save ourselves from having to use PYTHONPATH
 import sys
 import os
-import commands
+try:
+    import commands
+    from commands import getoutput
+except ImportError:
+    import subprocess
+    from subprocess import getoutput
 import re
 
 import test.TestBake
@@ -42,7 +47,7 @@ class TestModuleBuild (unittest.TestCase):
     def setUp(self):
         """Common set Up environment, available for all tests."""
         pathname = os.path.dirname("/tmp/source/")  
-        testStatus = commands.getoutput('rm -rf ' + pathname)
+        testStatus = getoutput('rm -rf ' + pathname)
         self._logger = StdoutModuleLogger();
         self._logger.set_verbose(1)
         self._env = ModuleEnvironment(self._logger, pathname, pathname, pathname+"/obj")
@@ -53,8 +58,8 @@ class TestModuleBuild (unittest.TestCase):
         self._env = None
         pathname = os.path.dirname("/tmp/source") 
 #        pathname = os.path.dirname(test.TestBake.compensate_third_runner())  
-        testStatus = commands.getoutput('rm -f ' + pathname +'/bakefile.xml')
-        testStatus = commands.getoutput('rm -rf /tmp/source')
+        testStatus = getoutput('rm -f ' + pathname +'/bakefile.xml')
+        testStatus = getoutput('rm -rf /tmp/source')
    
     def test_PythonModuleBuild(self):
         """Tests the WafModuleBuild Class from ModuleBuild. """
@@ -77,12 +82,12 @@ class TestModuleBuild (unittest.TestCase):
         archive.attribute("url").value = "http://switch.dl.sourceforge.net/project/pygccxml/pygccxml/pygccxml-1.0/pygccxml-1.0.0.zip"
         self._env._module_name="pygccxml"
         self._env._module_dir="pygccxml"
-        testStatus = commands.getoutput('rm -rf /tmp/source/pygccxml')
-        testStatus = commands.getoutput('mkdir /tmp/source')
+        testStatus = getoutput('rm -rf /tmp/source/pygccxml')
+        testStatus = getoutput('mkdir /tmp/source')
         self._logger.set_current_module(self._env._module_name)
         testResult = archive.download(self._env)
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/pygccxml|wc')
+        testStatus = getoutput('ls /tmp/source/pygccxml|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
      
@@ -115,7 +120,7 @@ class TestModuleBuild (unittest.TestCase):
             self.assertEqual(testResult, None)
         
         # creates the file, empty, but created    
-        testStatus = commands.getoutput('touch ' + self._env.srcdir + 
+        testStatus = getoutput('touch ' + self._env.srcdir + 
                                         '/test.patch')
        
         testResult = python.build(self._env, "1")
@@ -128,14 +133,14 @@ class TestModuleBuild (unittest.TestCase):
         
         python.attribute('patch').value = ''
        
-        testStatus = commands.getoutput('rm -rf ' + self._env.objdir)
-        testStatus = commands.getoutput('rm -rf ' + self._env._installdir)
+        testStatus = getoutput('rm -rf ' + self._env.objdir)
+        testStatus = getoutput('rm -rf ' + self._env._installdir)
         testResult = python.build(self._env, "1")
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/pygccxml/object_bake|wc')
+        testStatus = getoutput('ls /tmp/source/pygccxml/object_bake|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
-        testStatus = commands.getoutput('ls /tmp/source/pygccxml/install_bake|wc')
+        testStatus = getoutput('ls /tmp/source/pygccxml/install_bake|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
         
@@ -143,9 +148,9 @@ class TestModuleBuild (unittest.TestCase):
         # No permission in the target directories 
         self._env.objdir = "/tmp/source/test1/testobj"
         self._env._installdir = "/tmp/source/test1/testinst"
-        testStatus = commands.getoutput('rm -rf ' + "/tmp/source/test1")
-        testStatus = commands.getoutput('mkdir ' + "/tmp/source/test1")
-        testStatus = commands.getoutput('chmod 000 ' +"/tmp/source/test1")
+        testStatus = getoutput('rm -rf ' + "/tmp/source/test1")
+        testStatus = getoutput('mkdir ' + "/tmp/source/test1")
+        testStatus = getoutput('chmod 000 ' +"/tmp/source/test1")
         testResult = None
         try:
             testResult = python.build(self._env, "1")
@@ -155,8 +160,8 @@ class TestModuleBuild (unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
             
-        testStatus = commands.getoutput('chmod 755 ' + "/tmp/source/test1")
-        testStatus = commands.getoutput('rm -rf ' + "/tmp/source/test1")
+        testStatus = getoutput('chmod 755 ' + "/tmp/source/test1")
+        testStatus = getoutput('rm -rf ' + "/tmp/source/test1")
 
 
         # call the clean to remove the build
@@ -166,10 +171,10 @@ class TestModuleBuild (unittest.TestCase):
 #        self._env._installdir = self._env.srcdir+"/install_bake"
 #        testResult = python.clean(self._env)
 #        self.assertEqual(testResult, None)
-#        testStatus = commands.getoutput('ls /tmp/source/pygccxml/object_bake|wc')
+#        testStatus = getoutput('ls /tmp/source/pygccxml/object_bake|wc')
 #        created = re.compile(' +\d+').search(testStatus).group().strip()
 #        self.assertEqual(created, "0")
-#        testStatus = commands.getoutput('ls /tmp/source/pygccxml/install_bake|wc')
+#        testStatus = getoutput('ls /tmp/source/pygccxml/install_bake|wc')
 #        created = re.compile(' +\d+').search(testStatus).group().strip()
 #        self.assertEqual(created, "0")
         
@@ -181,7 +186,7 @@ class TestModuleBuild (unittest.TestCase):
         self.assertNotEqual(waf, None)
         self.assertEqual(waf.name(), "waf")
 
-        testStatus = commands.getoutput('cp test.patch /tmp/source/' 
+        testStatus = getoutput('cp test.patch /tmp/source/' 
                                         'openflow-ns3/test.patch' )
         self._env.start_build("waf", "/tmp", waf.supports_objdir)
 
@@ -203,7 +208,7 @@ class TestModuleBuild (unittest.TestCase):
         mercurial.attribute("url").value = "http://code.nsnam.org/bhurd/openflow"
         self._env._module_name="openflow-ns3"
         self._env._module_dir="openflow-ns3"
-        testStatus = commands.getoutput('rm -rf /tmp/source')
+        testStatus = getoutput('rm -rf /tmp/source')
         self._logger.set_current_module(self._env._module_name)
         testResult = mercurial.download(self._env)
         self.assertEqual(testResult, None)
@@ -251,7 +256,7 @@ class TestModuleBuild (unittest.TestCase):
             self.assertNotEqual(e._reason, None)    
             self.assertEqual(testResult, None)
  
-        testStatus = commands.getoutput('cp test.patch /tmp/source/' 
+        testStatus = getoutput('cp test.patch /tmp/source/' 
                                         'openflow-ns3/test.patch' )
        
         # creates the file, empty, but created    
@@ -264,7 +269,7 @@ class TestModuleBuild (unittest.TestCase):
         except TaskError as t:
             print(t.reason)
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/openflow-ns3/build|wc')
+        testStatus = getoutput('ls /tmp/source/openflow-ns3/build|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
         waf.attribute('patch').value = ''
@@ -272,7 +277,7 @@ class TestModuleBuild (unittest.TestCase):
         # call the distclean to remove the build
         testResult = waf.distclean(self._env)
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/openflow-ns3/build|wc')
+        testStatus = getoutput('ls /tmp/source/openflow-ns3/build|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertEqual(created, "0")
        
@@ -292,14 +297,14 @@ class TestModuleBuild (unittest.TestCase):
         except TaskError as t:
             print(t.reason)
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/openflow-ns3/build/default/lib|wc')
+        testStatus = getoutput('ls /tmp/source/openflow-ns3/build/default/lib|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
         
         # call the clean to remove the build
         testResult = waf.clean(self._env)
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/openflow-ns3/build/default/lib|wc')
+        testStatus = getoutput('ls /tmp/source/openflow-ns3/build/default/lib|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertEqual(created, "0")
 
@@ -349,7 +354,7 @@ class TestModuleBuild (unittest.TestCase):
 
         self._env._module_name="pybindgen"
         self._env._module_dir="pybindgen"
-        testStatus = commands.getoutput('mkdir /tmp/source')
+        testStatus = getoutput('mkdir /tmp/source')
         self._logger.set_current_module(self._env._module_name)
         testResult = bazaar.download(self._env)
         self.assertEqual(testResult, None)
@@ -398,10 +403,10 @@ class TestModuleBuild (unittest.TestCase):
             self.assertEqual(testResult, None)
         
         # creates the file, empty, but created    
-        testStatus = commands.getoutput('touch ' + self._env.srcdir + 
+        testStatus = getoutput('touch ' + self._env.srcdir + 
                                         '/test.patch')
         
-        testStatus = commands.getoutput('rm -rf /tmp/source/pybindgen/object')
+        testStatus = getoutput('rm -rf /tmp/source/pybindgen/object')
         try:
             testResult = waf.build(self._env, "1")
         except TaskError as e:
@@ -466,7 +471,7 @@ class TestModuleBuild (unittest.TestCase):
         self._logger.set_current_module(self._env._module_name)
 #        bazaar.attribute("revision").value = "revno:795"
 
-        testStatus = commands.getoutput('mkdir /tmp/source')
+        testStatus = getoutput('mkdir /tmp/source')
         testResult = cvs.download(self._env)
         self.assertEqual(testResult, None)
 
@@ -502,17 +507,17 @@ class TestModuleBuild (unittest.TestCase):
             self.assertEqual(testResult, None)
         
         # creates the file, empty, but created    
-        testStatus = commands.getoutput('touch ' + self._env.srcdir + 
+        testStatus = getoutput('touch ' + self._env.srcdir + 
                                         '/test.patch')
 
-        testStatus = commands.getoutput('rm -rf /tmp/source/gccxml/object')
+        testStatus = getoutput('rm -rf /tmp/source/gccxml/object')
         try:
             testResult = cmake.build(self._env, "1")
         except TaskError as t:
             print("Error compiling the module, maybe gccxml is not compatible with this architecture")
             
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/gccxml/object|wc')
+        testStatus = getoutput('ls /tmp/source/gccxml/object|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
         
@@ -521,7 +526,7 @@ class TestModuleBuild (unittest.TestCase):
         #TODO: This module does not accepts distclean find another one to test
 #        testResult = cmake.distclean(self._env)
 #        self.assertEqual(testResult, None)
-#        testStatus = commands.getoutput('ls /tmp/source/gccxml/object|wc')
+#        testStatus = getoutput('ls /tmp/source/gccxml/object|wc')
 #        created = re.compile(' +\d+').search(testStatus).group().strip()
 #        self.assertEqual(created, "0")
 
@@ -532,7 +537,7 @@ class TestModuleBuild (unittest.TestCase):
         # just the object files.... Should this  be like that??!?!        
         testResult = cmake.clean(self._env)
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls /tmp/source/gccxml/object/GCC/' 
+        testStatus = getoutput('ls /tmp/source/gccxml/object/GCC/' 
                                         'gcc/CMakeFiles/backend.dir/*.o|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertEqual(created, "0")
@@ -549,7 +554,7 @@ class TestModuleBuild (unittest.TestCase):
         except TaskError as t:
             print("Error compiling the module, maybe gccxml is not compatible with this architecture")
         self.assertEqual(testResult, None)
-        testStatus = commands.getoutput('ls -l /tmp/source/gccxml/object|wc')
+        testStatus = getoutput('ls -l /tmp/source/gccxml/object|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
 
@@ -571,7 +576,7 @@ class TestModuleBuild (unittest.TestCase):
         mercurial.attribute("url").value = "http://code.nsnam.org/mathieu/readversiondef"
         self._env._module_name="readversiondef"
         self._env._module_dir="readversiondef"
-        testStatus = commands.getoutput('rm -rf /tmp/source')
+        testStatus = getoutput('rm -rf /tmp/source')
         self._logger.set_current_module(self._env._module_name)
         testResult = mercurial.download(self._env)
         self.assertEqual(testResult, None)
@@ -608,10 +613,10 @@ class TestModuleBuild (unittest.TestCase):
             self.assertEqual(testResult, None)
         
         # creates the file, empty, but created    
-        testStatus = commands.getoutput('touch ' + self._env.srcdir + 
+        testStatus = getoutput('touch ' + self._env.srcdir + 
                                         '/test.patch')
 
-        testStatus = commands.getoutput('rm -rf /tmp/source/readversiondef/object')
+        testStatus = getoutput('rm -rf /tmp/source/readversiondef/object')
         
         try:
             testResult = make.build(self._env, "1")
@@ -621,14 +626,14 @@ class TestModuleBuild (unittest.TestCase):
         self.assertEqual(testResult, None)
         make.attribute('patch').value = ''
 
-        testStatus = commands.getoutput('ls /tmp/source/readversiondef/bin|wc')
+        testStatus = getoutput('ls /tmp/source/readversiondef/bin|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertNotEqual(created, "0")
 
         #TODO: This module does not accepts distclean find another one to test
 #        testResult = make.distclean(self._env)
 #        self.assertEqual(testResult, None)
-#        testStatus = commands.getoutput('ls /tmp/source/readversiondef/bin|wc')
+#        testStatus = getoutput('ls /tmp/source/readversiondef/bin|wc')
 #        created = re.compile(' +\d+').search(testStatus).group().strip()
 #        self.assertEqual(created, "0")
 
@@ -637,7 +642,7 @@ class TestModuleBuild (unittest.TestCase):
         # TODO:  This module does not support make clean find another one        
 #         testResult = make.clean(self._env)
 #         self.assertEqual(testResult, None)
-#        testStatus = commands.getoutput('ls /tmp/source/readversiondef/*.o|wc')
+#        testStatus = getoutput('ls /tmp/source/readversiondef/*.o|wc')
 #        created = re.compile(' +\d+').search(testStatus).group().strip()
 #        self.assertEqual(created, "0")
         
@@ -660,7 +665,7 @@ class TestModuleBuild (unittest.TestCase):
             print(t.reason) 
         self.assertEqual(testResult, None)
         make.perform_post_installation(self._env)
-        testStatus = commands.getoutput('ls /tmp/source/readversiondef/*.o|wc')
+        testStatus = getoutput('ls /tmp/source/readversiondef/*.o|wc')
         created = re.compile(' +\d+').search(testStatus).group().strip()
         self.assertEqual(created, "0")
 
@@ -836,7 +841,7 @@ class TestModuleBuild (unittest.TestCase):
         self._env._module_dir="openflow-ns3"
         self._env._objdir = "/tmp/object_openflow"
         self._env._installdir = "/tmp/install_openflow"
-        testStatus = commands.getoutput('rm -rf /tmp/source')
+        testStatus = getoutput('rm -rf /tmp/source')
         self._logger.set_current_module(self._env._module_name)
         testResult = mercurial.download(self._env)
         self.assertEqual(testResult, None)
@@ -876,7 +881,7 @@ class TestModuleBuild (unittest.TestCase):
         testStatus = os.path.isdir('/tmp/source/install_openflow')
         self.assertFalse(testStatus)
 
-#        testStatus = commands.getoutput('ls -l /tmp/source/openflow-ns3/object|wc')
+#        testStatus = getoutput('ls -l /tmp/source/openflow-ns3/object|wc')
 #        created = re.compile(' +\d+').search(testStatus).group().strip()
 #        self.assertNotEqual(created, "0")
 
