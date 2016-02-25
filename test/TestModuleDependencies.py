@@ -134,15 +134,20 @@ lex.yy -> lex.yy.h
 lex.yy.h -> bar.c
 """
         self.run_one_test(deps, ['bar.o'], 
-                          ['bar.h','lex.yy', 'lex.yy.h', 'bar.c', 'bar.o'])
+                          ['lex.yy', 'bar.h', 'lex.yy.h', 'bar.c', 'bar.o'])
+
         self.run_one_test(deps, ['foo.o'], 
                           ['foo.h', 'foo.c', 'foo.o'])
+
         self.run_one_test(deps, ['main'], 
-                          ['bar.h', 'foo.h', 'lex.yy', 'foo.c', 'lex.yy.h', 
+                          ['lex.yy', 'bar.h', 'foo.h', 'lex.yy.h', 'foo.c', 
                            'bar.c', 'foo.o', 'bar.o', 'main'])
+
         self.run_one_test(deps, ['main', 'foo.o'], 
-                          ['bar.h', 'foo.h', 'lex.yy', 'foo.c', 'lex.yy.h', 
+                          ['lex.yy', 'bar.h', 'foo.h', 'lex.yy.h', 'foo.c', 
                            'bar.c', 'foo.o', 'bar.o', 'main'])
+ 
+
         
     def Dtest_optional(self):
         self.run_one_test("A ?> B", targets = [SrcTest('B')],
